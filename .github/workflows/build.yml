@@ -7,22 +7,19 @@ on:
 
 jobs:
   build:
-    runs-on: windows-2022
+    runs-on: windows-latest
     
     steps:
     - uses: actions/checkout@v4
 
-    - name: Download EWDK (Takes 5-10 mins)
-      run: |
-        curl -L -o ewdk.iso "https://go.microsoft.com/fwlink/?linkid=2196230"
+    - name: Install Windows Driver Kit (WDK)
+      run: choco install windowsdriverkit10 -y --execution-timeout=1800
 
-    - name: Build Driver using EWDK
-      run: |
-        $isoPath = Resolve-Path "ewdk.iso"
-        $mountResult = Mount-DiskImage -ImagePath $isoPath -PassThru
-        $driveLetter = ($mountResult | Get-Volume).DriveLetter
-        cmd.exe /c "${driveLetter}:\BuildEnv\SetupBuildEnv.cmd && msbuild rbxdriver.sln /p:Configuration=Release /p:Platform=x64"
-        Dismount-DiskImage -ImagePath $isoPath
+    - name: Add MSBuild to PATH
+      uses: microsoft/setup-msbuild@v2
+
+    - name: Build Driver
+      run: msbuild rbxdriver.sln /p:Configuration=Release /p:Platform=x64
       
     - name: Upload Driver Artifact
       uses: actions/upload-artifact@v4
