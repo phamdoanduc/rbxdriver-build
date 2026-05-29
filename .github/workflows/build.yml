@@ -14,14 +14,15 @@ jobs:
 
     - name: Download EWDK (Takes 5-10 mins)
       run: |
-        Invoke-WebRequest -Uri "https://go.microsoft.com/fwlink/?linkid=2196230" -OutFile ewdk.iso
+        curl -L -o ewdk.iso "https://go.microsoft.com/fwlink/?linkid=2196230"
 
     - name: Build Driver using EWDK
       run: |
-        $mountResult = Mount-DiskImage -ImagePath ewdk.iso -PassThru
+        $isoPath = Resolve-Path "ewdk.iso"
+        $mountResult = Mount-DiskImage -ImagePath $isoPath -PassThru
         $driveLetter = ($mountResult | Get-Volume).DriveLetter
         cmd.exe /c "${driveLetter}:\BuildEnv\SetupBuildEnv.cmd && msbuild rbxdriver.sln /p:Configuration=Release /p:Platform=x64"
-        Dismount-DiskImage -ImagePath ewdk.iso
+        Dismount-DiskImage -ImagePath $isoPath
       
     - name: Upload Driver Artifact
       uses: actions/upload-artifact@v4
