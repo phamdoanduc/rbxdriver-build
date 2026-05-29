@@ -12,14 +12,11 @@ jobs:
     steps:
     - uses: actions/checkout@v4
 
-    - name: Install Windows Driver Kit (WDK)
-      run: choco install windowsdriverkit10 -y --execution-timeout=1800
-
     - name: Add MSBuild to PATH
       uses: microsoft/setup-msbuild@v2
 
-    - name: Build Driver
-      run: msbuild rbxdriver.sln /p:Configuration=Release /p:Platform=x64
+    - name: Build Driver (NuGet WDK)
+      run: msbuild rbxdriver.vcxproj /p:Configuration=Release /p:Platform=x64 /restore
       
     - name: Upload Driver Artifact
       uses: actions/upload-artifact@v4
